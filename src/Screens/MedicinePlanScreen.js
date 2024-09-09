@@ -25,12 +25,17 @@ import {
     Select,
     MenuItem,
     InputLabel,
+    FormControlLabel,
+    Switch,
     Checkbox,
     ListItemText
 } from '@mui/material';
-import { Refresh, AddCircleOutline, CalendarToday, AccessTime, Visibility, Search } from '@mui/icons-material';
+import { Refresh, AddCircleOutline, CalendarToday, Visibility, Search, Edit as EditIcon } from '@mui/icons-material';
 import axios from 'axios';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 import Navbar from '../components/Navbar';
+import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { BACKEND_HOST_URL } from '../config/config';
 
 export default function MedicinePlanScreen() {
@@ -40,18 +45,41 @@ export default function MedicinePlanScreen() {
     const [open, setOpen] = useState(false);
     const [viewOpen, setViewOpen] = useState(false);
     const [selectedReminder, setSelectedReminder] = useState(null);
-    const [newReminder, setNewReminder] = useState({
+    const [newMedicine, setNewMedicine] = useState({
         patientUid: '',
         time: '',
-        staffUid : '',
+        staffUid: '',
         medicines: [],
-        setReminder : false,
-        reminderForAll: false
+        setReminder: false,
+        reminderForAll: false,
+        reminderFrequency: '',
+        reminderTimeDay: [],
+        reminderTimeDate: ''
     });
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    const staffUid = user ? user.user.uid : '';
+
+    const [newReminder, setNewReminder] = useState({
+        patientUid: '',
+        reminderType: 'Medicine',
+        reminderFrequency: '',
+        reminderTimeStart: '',
+        reminderTimeEnd: '',
+        reminderTimeDate: '',
+        reminderTimeDay: [],
+        reminderMessage: 'Hey! Take Your Medicine On Time!',
+        note: '',
+        notificationPushType: '',
+    });
+    const [openMedicineForm, setOpenMedicineForm] = useState(false);
+    const [medicineData, setMedicineData] = useState({ name: '', quantity: '', unit: '' });
+
     const [selectedDates, setSelectedDates] = useState([]);
     const [patients, setPatients] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const dayOptions = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
     useEffect(() => {
         fetchPatients();
@@ -90,6 +118,17 @@ export default function MedicinePlanScreen() {
     };
 
     const handleClose = () => {
+        setNewMedicine({
+            patientUid: '',
+            time: '',
+            staffUid: '',
+            medicines: [],
+            setReminder: false,
+            reminderForAll: false,
+            reminderFrequency: '',
+            reminderTimeDay: [],
+            reminderTimeDate: ''
+        });
         setOpen(false);
     };
 
@@ -98,62 +137,90 @@ export default function MedicinePlanScreen() {
     };
 
     const handleInputChange = (name, value) => {
-        setNewReminder({
-            ...newReminder,
+        setNewMedicine((prev) => ({
+            ...prev,
             [name]: value,
-        });
+        }));
+    };
+
+    const handleRemoveMedicine = (index) => {
+        const updatedMedicines = newMedicine.medicines.filter((_, i) => i !== index);
+        setNewMedicine((prev) => ({
+            ...prev,
+            staffUid: staffUid,
+            medicines: updatedMedicines,
+        }));
+    };
+
+    const handleMedicineFormOpen = () => {
+        setMedicineData({ name: '', quantity: '', unit: '' });
+        setOpenMedicineForm(true);
+    };
+
+    const handleMedicineFormClose = () => {
+        setOpenMedicineForm(false);
+    };
+
+    const handleMedicineDataChange = (field, value) => {
+        setMedicineData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleMedicineSave = () => {
+        setNewMedicine((prev) => ({
+            ...prev,
+            medicines: [...prev.medicines, medicineData]
+        }));
+        handleMedicineFormClose();
+    };
+
+    const handleEditMedicine = (index) => {
+        setMedicineData(newMedicine.medicines[index]);
+        setOpenMedicineForm(true);
     };
 
     const handleAddDate = () => {
         if (newReminder.reminderTimeDate) {
-            setSelectedDates([...selectedDates, newReminder.reminderTimeDate]);
+            setSelectedDates((prev) => [...prev, newReminder.reminderTimeDate]);
             handleInputChange('reminderTimeDate', '');
         }
     };
 
-    const handleMedicineChange = (index, field, value) => {
-        const updatedMedicines = [...newReminder.medicines];
-        updatedMedicines[index] = {
-            ...updatedMedicines[index],
-            [field]: value,
-        };
-        setNewReminder({
-            ...newReminder,
-            medicines: updatedMedicines,
-        });
-    };
-
-    const handleAddMedicine = () => {
-        setNewReminder({
-            ...newReminder,
-            medicines: [...newReminder.medicines, { name: '', quantity: '', unit: '' }]
-        });
-    };
-
-    const handleRemoveMedicine = (index) => {
-        const updatedMedicines = newReminder.medicines.filter((_, i) => i !== index);
-        setNewReminder({
-            ...newReminder,
-            medicines: updatedMedicines,
-        });
-    };
-
-    const user = JSON.parse(localStorage.getItem('user'));
-    const staffUid = user ? user.user.uid : '';
-
     const handleSubmit = async () => {
         try {
+            if (newMedicine.medicines.length === 0) {
+                alert('Please add at least one medicine before submitting the plan.');
+                return; // Prevent further execution
+            }
+
             await axios.post(`${BACKEND_HOST_URL}/api/medicinePlans/`, {
-                ...newReminder,
+                ...newMedicine,
                 reminderTimeDate: selectedDates
             });
-            setNewReminder({
+
+            if (newMedicine.setReminder) {
+                setNewReminder((prev) => ({
+                    ...prev,
+                    patientUid: newMedicine.patientUid,
+                    reminderFrequency: newMedicine.reminderFrequency,
+                    reminderTimeStart: newMedicine.time,
+                    reminderTimeDate: newMedicine.reminderTimeDate,
+                    reminderTimeDay: newMedicine.reminderTimeDay,
+                    notificationPushType: newMedicine.reminderForAll ? 'all' : staffUid,
+                    note: newMedicine.medicines.map(medicine => `${medicine.name} (${medicine.quantity} ${medicine.unit})`).join(', ') // Set medicines as reminder note
+                }));
+                await addReminder();
+            }
+
+            setNewMedicine({
                 patientUid: '',
                 time: '',
-                staffUid : '',
+                staffUid: '',
                 medicines: [],
-                setReminder : false,
-                reminderForAll: false
+                setReminder: false,
+                reminderForAll: false,
+                reminderFrequency: '',
+                reminderTimeDay: [],
+                reminderTimeDate: ''
             });
             setSelectedDates([]);
             fetchReminders();
@@ -172,17 +239,43 @@ export default function MedicinePlanScreen() {
         setPage(0);
     };
 
-    const dayOptions = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const addReminder = async () => {
+        await axios.post(`${BACKEND_HOST_URL}/api/reminders/`, {
+            ...newReminder
+        });
+
+        setNewReminder({
+            patientUid: '',
+            reminderType: '',
+            reminderFrequency: '',
+            reminderTimeStart: '',
+            reminderTimeEnd: '',
+            reminderTimeDate: '',
+            reminderTimeDay: [],
+            reminderMessage: '',
+            note: '',
+            notificationPushType: '',
+        });
+    };
+
+    const handleDeleteReminder = async (id) => {
+        try {
+            await axios.delete(`${BACKEND_HOST_URL}/api/medicinePlans/${id}`);
+            fetchReminders(); // Refresh the reminders after deletion
+        } catch (error) {
+            console.error('Failed to delete reminder:', error);
+        }
+    };
 
     return (
         <>
-        <Navbar/>
+            <Navbar />
             <Container maxWidth="md">
                 <Box display="flex" flexDirection="column" alignItems="center" padding={2} mt={4}>
                     <Box display="flex" alignItems="center" mb={3} width="100%">
                         <TextField
                             variant="outlined"
-                            placeholder="Search Reminders"
+                            placeholder="Search Medicine Plan"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             InputProps={{
@@ -205,23 +298,27 @@ export default function MedicinePlanScreen() {
                                         <TableCell>Index</TableCell>
                                         <TableCell>Patient</TableCell>
                                         <TableCell>Time</TableCell>
+                                        <TableCell>Actions</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {reminders.length > 0 ? reminders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((reminder, index) => (
                                         <TableRow key={reminder._id || index}>
                                             <TableCell>{index + 1}</TableCell>
-                                            <TableCell>{reminder.patientName}</TableCell>
+                                            <TableCell>{patients.find((d) => d.uid === reminder.patientUid)?.name || 'Unknown'}</TableCell>
                                             <TableCell>{reminder.time}</TableCell>
                                             <TableCell>
                                                 <IconButton size="small" color="primary" onClick={() => handleReminderClick(reminder)}>
                                                     <Visibility />
                                                 </IconButton>
+                                                <IconButton size="small" color="error" onClick={() => handleDeleteReminder(reminder._id)}>
+                                                    <DeleteIcon />
+                                                </IconButton>
                                             </TableCell>
                                         </TableRow>
                                     )) : (
                                         <TableRow>
-                                            <TableCell colSpan={5}>
+                                            <TableCell colSpan={4}>
                                                 <Typography variant="body1" align="center">No Reminders Found</Typography>
                                             </TableCell>
                                         </TableRow>
@@ -253,13 +350,13 @@ export default function MedicinePlanScreen() {
             </Box>
 
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-                <DialogTitle>Create Reminder</DialogTitle>
+                <DialogTitle>Create Medicine Plan</DialogTitle>
                 <DialogContent>
                     <Box component="form" noValidate autoComplete="off" sx={{ mt: 1 }}>
                         <FormControl fullWidth margin="normal">
                             <InputLabel>Patient</InputLabel>
                             <Select
-                                value={newReminder.patientUid}
+                                value={newMedicine.patientUid}
                                 onChange={(e) => handleInputChange('patientUid', e.target.value)}
                             >
                                 {patients.map((patient) => (
@@ -269,41 +366,13 @@ export default function MedicinePlanScreen() {
                                 ))}
                             </Select>
                         </FormControl>
-
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel>Reminder Type</InputLabel>
-                            <Select
-                                value={newReminder.reminderType}
-                                onChange={(e) => handleInputChange('reminderType', e.target.value)}
-                            >
-                                <MenuItem value="Medication">Medication</MenuItem>
-                                <MenuItem value="Exercise">Exercise</MenuItem>
-                                <MenuItem value="Diet">Diet</MenuItem>
-                                <MenuItem value="Hydration">Hydration</MenuItem>
-                                <MenuItem value="Other">Other</MenuItem>
-                            </Select>
-                        </FormControl>
-
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel>Reminder Frequency</InputLabel>
-                            <Select
-                                value={newReminder.reminderFrequency}
-                                onChange={(e) => handleInputChange('reminderFrequency', e.target.value)}
-                            >
-                                <MenuItem value="Daily">Daily</MenuItem>
-                                <MenuItem value="Weekly">Weekly</MenuItem>
-                                <MenuItem value="Monthly">Monthly</MenuItem>
-                                <MenuItem value="Day">Day</MenuItem>
-                            </Select>
-                        </FormControl>
-
                         <TextField
                             margin="normal"
-                            label="Start Time"
+                            label="Medicine Time"
                             type="time"
                             fullWidth
-                            value={newReminder.reminderTimeStart}
-                            onChange={(e) => handleInputChange('reminderTimeStart', e.target.value)}
+                            value={newMedicine.time}
+                            onChange={(e) => handleInputChange('time', e.target.value)}
                             InputLabelProps={{
                                 shrink: true,
                             }}
@@ -311,140 +380,138 @@ export default function MedicinePlanScreen() {
                                 step: 300,
                             }}
                         />
-
-                        <TextField
-                            margin="normal"
-                            label="End Time"
-                            type="time"
-                            fullWidth
-                            value={newReminder.reminderTimeEnd}
-                            onChange={(e) => handleInputChange('reminderTimeEnd', e.target.value)}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            inputProps={{
-                                step: 300,
-                            }}
+                        <Box mt={3}>
+                            <Typography variant="h6">Medicines</Typography>
+                            {newMedicine.medicines.length > 0 ? (
+                                <TableContainer component={Paper}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Name</TableCell>
+                                                <TableCell>Quantity</TableCell>
+                                                <TableCell>Unit</TableCell>
+                                                <TableCell>Actions</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody sx={{ fontSize: 14 }}>
+                                            {newMedicine.medicines.map((medicine, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell>{medicine.name}</TableCell>
+                                                    <TableCell>{medicine.quantity}</TableCell>
+                                                    <TableCell>{medicine.unit}</TableCell>
+                                                    <TableCell>
+                                                        <IconButton onClick={() => handleEditMedicine(index)} color="primary">
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                        <IconButton onClick={() => handleRemoveMedicine(index)} color="error">
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            ) : (
+                                <Typography variant="body2">No Medicines Added</Typography>
+                            )}
+                            <Button onClick={handleMedicineFormOpen} variant="outlined" sx={{ mt: 2 }}>
+                                Add Medicine
+                            </Button>
+                        </Box>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={newMedicine.setReminder}
+                                    onChange={(e) => handleInputChange('setReminder', e.target.checked)}
+                                />
+                            }
+                            label="Set Reminder"
                         />
-
-                        {newReminder.reminderFrequency === 'Weekly' && (
-                            <FormControl fullWidth margin="normal">
-                                <InputLabel>Days of the Week</InputLabel>
-                                <Select
-                                    multiple
-                                    value={newReminder.reminderTimeDay}
-                                    onChange={(e) => handleInputChange('reminderTimeDay', e.target.value)}
-                                    renderValue={(selected) => selected.join(', ')}
-                                >
-                                    {dayOptions.map((day) => (
-                                        <MenuItem key={day} value={day}>
-                                            <Checkbox checked={newReminder.reminderTimeDay.indexOf(day) > -1} />
-                                            <ListItemText primary={day} />
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        )}
-
-                        {newReminder.reminderFrequency === 'Monthly' && (
-                            <TextField
-                                margin="normal"
-                                label="Date"
-                                type="date"
-                                fullWidth
-                                value={newReminder.reminderTimeDate}
-                                onChange={(e) => handleInputChange('reminderTimeDate', e.target.value)}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
-                        )}
-
-                        {newReminder.reminderFrequency === 'Day' && (
+                        {newMedicine.setReminder && (
                             <>
-                                <Box display="flex" alignItems="center">
+                                <FormControl fullWidth margin="normal">
+                                    <InputLabel>Reminder Frequency</InputLabel>
+                                    <Select
+                                        value={newMedicine.reminderFrequency}
+                                        onChange={(e) => handleInputChange('reminderFrequency', e.target.value)}
+                                    >
+                                        <MenuItem value="Daily">Daily</MenuItem>
+                                        <MenuItem value="Weekly">Weekly</MenuItem>
+                                        <MenuItem value="Monthly">Monthly</MenuItem>
+                                        <MenuItem value="Day">Day</MenuItem>
+                                    </Select>
+                                </FormControl>
+
+                                {newMedicine.reminderFrequency === 'Weekly' && (
+                                    <FormControl fullWidth margin="normal">
+                                        <InputLabel>Days of the Week</InputLabel>
+                                        <Select
+                                            multiple
+                                            value={newMedicine.reminderTimeDay}
+                                            onChange={(e) => handleInputChange('reminderTimeDay', e.target.value)}
+                                            renderValue={(selected) => selected.join(', ')}
+                                        >
+                                            {dayOptions.map((day) => (
+                                                <MenuItem key={day} value={day}>
+                                                    <Checkbox checked={newMedicine.reminderTimeDay.indexOf(day) > -1} />
+                                                    <ListItemText primary={day} />
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                )}
+
+                                {newMedicine.reminderFrequency === 'Monthly' && (
                                     <TextField
                                         margin="normal"
                                         label="Date"
                                         type="date"
                                         fullWidth
-                                        value={newReminder.reminderTimeDate}
+                                        value={newMedicine.reminderTimeDate}
                                         onChange={(e) => handleInputChange('reminderTimeDate', e.target.value)}
                                         InputLabelProps={{
                                             shrink: true,
                                         }}
                                     />
-                                    <Button onClick={handleAddDate} sx={{ ml: 2 }} variant="outlined">Add</Button>
-                                </Box>
-                                <Box mt={2}>
-                                    {selectedDates.length > 0 && (
-                                        <Typography variant="body2">
-                                            Selected Dates: {selectedDates.join(', ')}
-                                        </Typography>
-                                    )}
-                                </Box>
+                                )}
+
+                                {newMedicine.reminderFrequency === 'Day' && (
+                                    <>
+                                        <Box display="flex" alignItems="center">
+                                            <TextField
+                                                margin="normal"
+                                                label="Date"
+                                                type="date"
+                                                fullWidth
+                                                value={newMedicine.reminderTimeDate}
+                                                onChange={(e) => handleInputChange('reminderTimeDate', e.target.value)}
+                                                InputLabelProps={{
+                                                    shrink: true,
+                                                }}
+                                            />
+                                            <Button onClick={handleAddDate} sx={{ ml: 2 }} variant="outlined">Add</Button>
+                                        </Box>
+                                        <Box mt={2}>
+                                            {selectedDates.length > 0 && (
+                                                <Typography variant="body2">
+                                                    Selected Dates: {selectedDates.join(', ')}
+                                                </Typography>
+                                            )}
+                                        </Box>
+                                    </>
+                                )}
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            checked={newMedicine.reminderForAll}
+                                            onChange={(e) => handleInputChange('reminderForAll', e.target.checked)}
+                                        />
+                                    }
+                                    label="Reminder For All!"
+                                />
                             </>
                         )}
-
-                        <TextField
-                            margin="normal"
-                            label="Reminder Message"
-                            fullWidth
-                            multiline
-                            rows={2}
-                            value={newReminder.reminderMessage}
-                            onChange={(e) => handleInputChange('reminderMessage', e.target.value)}
-                        />
-
-                        <TextField
-                            margin="normal"
-                            label="Note"
-                            fullWidth
-                            multiline
-                            rows={2}
-                            value={newReminder.note}
-                            onChange={(e) => handleInputChange('note', e.target.value)}
-                        />
-
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel>Notification Push Type</InputLabel>
-                            <Select
-                                value={newReminder.notificationPushType}
-                                onChange={(e) => handleInputChange('notificationPushType', e.target.value)}
-                            >
-                                <MenuItem value="all">For All Users</MenuItem>
-                                <MenuItem value={staffUid}>Only For Me</MenuItem>
-                            </Select>
-                        </FormControl>
-
-                        <Box mt={3}>
-                            <Typography variant="h6">Medicines</Typography>
-                            {newReminder.medicines.map((medicine, index) => (
-                                <Box key={index} display="flex" alignItems="center" mb={2}>
-                                    <TextField
-                                        label="Medicine Name"
-                                        value={medicine.name}
-                                        onChange={(e) => handleMedicineChange(index, 'name', e.target.value)}
-                                        sx={{ mr: 2 }}
-                                    />
-                                    <TextField
-                                        label="Quantity"
-                                        type="number"
-                                        value={medicine.quantity}
-                                        onChange={(e) => handleMedicineChange(index, 'quantity', e.target.value)}
-                                        sx={{ mr: 2 }}
-                                    />
-                                    <TextField
-                                        label="Unit"
-                                        value={medicine.unit}
-                                        onChange={(e) => handleMedicineChange(index, 'unit', e.target.value)}
-                                        sx={{ mr: 2 }}
-                                    />
-                                    <Button onClick={() => handleRemoveMedicine(index)} color="error">Remove</Button>
-                                </Box>
-                            ))}
-                            <Button onClick={handleAddMedicine} variant="outlined">Add Medicine</Button>
-                        </Box>
                     </Box>
                 </DialogContent>
                 <DialogActions>
@@ -457,43 +524,57 @@ export default function MedicinePlanScreen() {
                 </DialogActions>
             </Dialog>
 
+            <Dialog open={openMedicineForm} onClose={handleMedicineFormClose} fullWidth maxWidth="xs">
+                <DialogTitle>Add Medicine</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        label="Medicine Name"
+                        value={medicineData.name}
+                        onChange={(e) => handleMedicineDataChange('name', e.target.value)}
+                        margin="dense"
+                    />
+                    <TextField
+                        fullWidth
+                        label="Quantity"
+                        type="number"
+                        value={medicineData.quantity}
+                        onChange={(e) => handleMedicineDataChange('quantity', e.target.value)}
+                        margin="dense"
+                    />
+                    <TextField
+                        fullWidth
+                        label="Unit"
+                        value={medicineData.unit}
+                        onChange={(e) => handleMedicineDataChange('unit', e.target.value)}
+                        margin="dense"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleMedicineFormClose} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleMedicineSave} color="primary">
+                        Save
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <Dialog open={viewOpen} onClose={handleViewClose} fullWidth maxWidth="sm">
-                <DialogTitle>View Reminder Details</DialogTitle>
+                <DialogTitle>View Medicine Plan Details</DialogTitle>
                 <DialogContent>
                     {selectedReminder && (
                         <Box>
                             <Box display="flex" justifyContent="space-between" alignItems="center">
                                 <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center' }}>
                                     <CalendarToday sx={{ fontSize: 20, marginRight: 1 }} />
-                                    {selectedReminder.createDate ? new Date(selectedReminder.createDate).toLocaleDateString() : 'N/A'}
-                                </Typography>
-                                <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <AccessTime sx={{ fontSize: 20, marginRight: 1 }} />
-                                    {selectedReminder.createDate ? new Date(selectedReminder.createDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A'}
+                                    {selectedReminder.createdAt ? new Date(selectedReminder.createdAt).toLocaleDateString() : 'N/A'}
                                 </Typography>
                             </Box>
                             <Divider sx={{ my: 2 }} />
                             <Grid container spacing={2}>
                                 <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Type:</strong> {selectedReminder.reminderType}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Frequency:</strong> {selectedReminder.reminderFrequency}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Start Time:</strong> {selectedReminder.reminderTimeStart}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>End Time:</strong> {selectedReminder.reminderTimeEnd}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Message:</strong> {selectedReminder.reminderMessage}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Note:</strong> {selectedReminder.note}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Notification Type:</strong> {selectedReminder.notificationPushType == 'all' ? 'All User' : 'Only For Me'}</Typography>
+                                    <Typography variant="body2"><strong>Time:</strong> {selectedReminder.time}</Typography>
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Typography variant="h6">Medicines</Typography>
@@ -504,6 +585,12 @@ export default function MedicinePlanScreen() {
                                             <Typography variant="body2">{medicine.unit}</Typography>
                                         </Box>
                                     ))}
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Typography variant="body2"><strong>Set Reminder:</strong> {selectedReminder.setReminder ? <DoneAllIcon sx={{ color: 'green' }} /> : <ClearIcon sx={{ color: 'red' }} />}</Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Typography variant="body2"><strong>Reminder For All:</strong> {selectedReminder.reminderForAll ? <DoneAllIcon sx={{ color: 'green' }} /> : <ClearIcon sx={{ color: 'red' }} />}</Typography>
                                 </Grid>
                             </Grid>
                         </Box>

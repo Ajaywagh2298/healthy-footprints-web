@@ -28,7 +28,7 @@ import {
     Checkbox,
     ListItemText
 } from '@mui/material';
-import { Refresh, AddCircleOutline, CalendarToday, AccessTime, Visibility, Search } from '@mui/icons-material';
+import { Refresh, AddCircleOutline, CalendarToday, AccessTime, Visibility, Search, Delete } from '@mui/icons-material';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import { BACKEND_HOST_URL } from '../config/config';
@@ -144,6 +144,15 @@ export default function RemindersScreen() {
         }
     };
 
+    const handleDeleteReminder = async (id) => {
+        try {
+            await axios.delete(`${BACKEND_HOST_URL}/api/reminders/${id}`);
+            fetchReminders(); // Refresh the reminders list after deletion
+        } catch (error) {
+            console.error('Failed to delete reminder:', error);
+        }
+    };
+
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -188,6 +197,7 @@ export default function RemindersScreen() {
                                         <TableCell>End Time</TableCell>
                                         <TableCell>Type</TableCell>
                                         <TableCell>View</TableCell>
+                                        <TableCell>Delete</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -202,10 +212,15 @@ export default function RemindersScreen() {
                                                     <Visibility />
                                                 </IconButton>
                                             </TableCell>
+                                            <TableCell>
+                                                <IconButton size="small" color="#d35400" onClick={() => handleDeleteReminder(reminder._id)}>
+                                                    <Delete SX={{ color: '#cb4335'}}/>
+                                                </IconButton>
+                                            </TableCell>
                                         </TableRow>
                                     )) : (
                                         <TableRow>
-                                            <TableCell colSpan={5}>
+                                            <TableCell colSpan={6}>
                                                 <Typography variant="body1" align="center">No Reminders Found</Typography>
                                             </TableCell>
                                         </TableRow>
@@ -264,6 +279,7 @@ export default function RemindersScreen() {
                                 <MenuItem value="Exercise">Exercise</MenuItem>
                                 <MenuItem value="Diet">Diet</MenuItem>
                                 <MenuItem value="Hydration">Hydration</MenuItem>
+                                <MenuItem value="Medicine">Hydration</MenuItem>
                                 <MenuItem value="Other">Other</MenuItem>
                             </Select>
                         </FormControl>

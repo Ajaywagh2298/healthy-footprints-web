@@ -17,7 +17,9 @@ import {
     DialogContent,
     DialogTitle,
     Button,
-    CircularProgress
+    CircularProgress,
+    Snackbar,
+    Alert
 } from '@mui/material';
 import { Search, Refresh, AccountCircle, AddCircleOutline, ShowChart } from '@mui/icons-material';
 import Navbar from '../components/Navbar';
@@ -25,6 +27,7 @@ import { BACKEND_HOST_URL } from '../config/config';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import axios from 'axios';
+import { motion } from 'framer-motion'; // Importing framer-motion for animations
 
 export default function DashboardScreen() {
     const location = useLocation();
@@ -42,6 +45,9 @@ export default function DashboardScreen() {
     const [selectedPatient, setSelectedPatient] = useState(null);
     // State for loading
     const [loading, setLoading] = useState(false);
+    // State for snackbar
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     useEffect(() => {
         fetchPatients();
@@ -82,6 +88,8 @@ export default function DashboardScreen() {
     const handleRefresh = () => {
         fetchPatients();
         fetchMatrix();
+        setSnackbarMessage('Data refreshed successfully!');
+        setSnackbarOpen(true);
     };
 
     const filteredPatients = patients.filter((patient) =>
@@ -107,62 +115,71 @@ export default function DashboardScreen() {
             await axios.put(`${BACKEND_HOST_URL}/api/patients/${selectedPatient.uid}`, selectedPatient);
             handleClose();
             fetchPatients();
+            setSnackbarMessage('Patient updated successfully!');
+            setSnackbarOpen(true);
         } catch (error) {
             console.error('Failed to update patient:', error);
         }
     };
 
     const renderPatient = (patient) => (
-        <Card
+        <motion.div
             key={patient.uid}
-            sx={{
-                padding: 2,
-                marginBottom: 2,
-                boxShadow: 3,
-                borderRadius: 2,
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                    transform: 'scale(1.02)',
-                    boxShadow: 6,
-                },
-            }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
         >
-            <CardContent>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={6}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{patient.name}</Typography>
-                        <Box display="flex" alignItems="center">
-                            <CalendarTodayIcon sx={{ fontSize: 16, marginRight: 0.5, color: 'gray' }} />
-                            <Typography variant="body2" color="text.secondary">
-                                {new Date(patient.dateOfBirth).toLocaleDateString()}
-                            </Typography>
-                        </Box>
+            <Card
+                sx={{
+                    padding: 2,
+                    marginBottom: 2,
+                    boxShadow: 3,
+                    borderRadius: 2,
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                        transform: 'scale(1.02)',
+                        boxShadow: 6,
+                    },
+                    backgroundColor: '#f5f5f5',
+                }}
+            >
+                <CardContent>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item xs={6}>
+                            <Typography sx={{ fontWeight: 'bold', fontSize: 16, marginRight: 3 }}>{patient.name}</Typography>
+                            <Box display="flex" alignItems="center">
+                                <CalendarTodayIcon sx={{ fontSize: 16, marginRight: 0.5, color: 'gray' }} />
+                                <Typography variant="body2" color="text.secondary">
+                                    {new Date(patient.dateOfBirth).toLocaleDateString()}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                        <Grid item xs={2}>
+                            {/* Avatar can be placed here if needed */}
+                        </Grid>
+                        <Grid item xs={4} textAlign="right">
+                            <CardActions sx={{ justifyContent: 'flex-end' }}>
+                                <Tooltip title="Add Daily Record">
+                                    <IconButton onClick={() => handleNavigate('/dailyRecord', { patientUid: patient.uid })}>
+                                        <AddCircleOutline color="primary" />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="View Patient Details">
+                                    <IconButton onClick={() => handleClickOpen(patient)}>
+                                        <AccountCircle color="secondary" />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="View Charts">
+                                    <IconButton>
+                                        <ShowChart color="action" />
+                                    </IconButton>
+                                </Tooltip>
+                            </CardActions>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={2}>
-                        {/* Avatar can be placed here if needed */}
-                    </Grid>
-                    <Grid item xs={4} textAlign="right">
-                        <CardActions sx={{ justifyContent: 'flex-end' }}>
-                            <Tooltip title="Add Daily Record">
-                                <IconButton onClick={() => handleNavigate('/dailyRecord', { patientUid: patient.uid } )}>
-                                    <AddCircleOutline color="primary" />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="View Patient Details">
-                                <IconButton onClick={() => handleClickOpen(patient)}>
-                                    <AccountCircle color="secondary" />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="View Charts">
-                                <IconButton>
-                                    <ShowChart color="action" />
-                                </IconButton>
-                            </Tooltip>
-                        </CardActions>
-                    </Grid>
-                </Grid>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 
     return (
@@ -184,10 +201,11 @@ export default function DashboardScreen() {
                                     </InputAdornment>
                                 ),
                             }}
+                            sx={{ borderRadius: 2 }}
                         />
                     </Grid>
                     <Grid item xs={2}>
-                        <IconButton onClick={handleRefresh}>
+                        <IconButton onClick={handleRefresh} sx={{ backgroundColor: '#1976d2', color: 'white', '&:hover': { backgroundColor: '#115293' } }}>
                             <Refresh />
                         </IconButton>
                     </Grid>
@@ -195,25 +213,25 @@ export default function DashboardScreen() {
 
                 <Grid container spacing={2} sx={{ marginTop: 2 }}>
                     <Grid item xs={6}>
-                        <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#82e0aa', color: 'white' }}>
+                        <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#82e0aa', color: 'white', borderRadius: 2 }}>
                             <Typography>Total Patients</Typography>
                             <Typography variant="h6">{totalMatrix.totalPatients || 0}</Typography>
                         </Paper>
                     </Grid>
                     <Grid item xs={6}>
-                        <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#f0b27a', color: 'white' }}>
+                        <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#f0b27a', color: 'white', borderRadius: 2 }}>
                             <Typography>Total Stock Quantity</Typography>
                             <Typography variant="h6">{totalMatrix.totalStockQuantity || 0}</Typography>
                         </Paper>
                     </Grid>
                     <Grid item xs={6}>
-                        <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#85c1e9', color: 'white' }}>
+                        <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#85c1e9', color: 'white', borderRadius: 2 }}>
                             <Typography>Total Value</Typography>
                             <Typography variant="h6">{totalMatrix.totalValue || 0}</Typography>
                         </Paper>
                     </Grid>
                     <Grid item xs={6}>
-                        <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#c39bd3', color: 'white' }}>
+                        <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#c39bd3', color: 'white', borderRadius: 2 }}>
                             <Typography>Total Users</Typography>
                             <Typography variant="h6">{totalMatrix.totalUsers || 0}</Typography>
                         </Paper>
@@ -290,6 +308,12 @@ export default function DashboardScreen() {
                         <Button onClick={handleUpdate} color="primary">Update</Button>
                     </DialogActions>
                 </Dialog>
+
+                <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+                    <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
             </Box>
         </>
     );

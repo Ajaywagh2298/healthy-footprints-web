@@ -6,10 +6,13 @@ import DashboardScreen from './Screens/DashboardScreen';
 import CreatePatientScreen from './Screens/CreatePatientScreen';
 import DailyRecordScreen from './Screens/DailyRecordScreen';
 import RemindersScreen from './Screens/RemindersScreen';
+import StockScreen from './Screens/StockScreen';
 import { BACKEND_HOST_URL } from './config/config';
 import axios from 'axios';
 import './App.css';
 import MedicinePlanScreen from './Screens/MedicinePlanScreen';
+import DietPlanScreen from './Screens/DietPlanScreen';
+import ItemsScreen from './Screens/ItemsScreen';
 import ReminderProcessor from './Processor/ReminderProcessor';
 const theme = createTheme({
   palette: {
@@ -29,6 +32,9 @@ function App() {
           <Route path="/dailyRecord" element={<DailyRecordScreen />} />
           <Route path='/reminder' element={<RemindersScreen />} />
           <Route path='/medicine' element={<MedicinePlanScreen />} />
+          <Route path='/deit-plan' element={<DietPlanScreen />} />
+          <Route path='/item' element={<ItemsScreen />} />
+          <Route path='/stock' element={<StockScreen/>} />
         </Routes>
       </Router>
     </ThemeProvider>

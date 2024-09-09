@@ -71,6 +71,7 @@ function ReminderProcessor() {
                     if (notificationPushType === 'all' || notificationPushType === userUid) {
                         console.log('Notification triggered:', reminder); // Debugging log
                         showNotification(reminderType, reminderMessage, note);
+                        sendAndroidNotification(reminderType, reminderMessage, note);
                     }
                 }
             }
@@ -84,23 +85,40 @@ function ReminderProcessor() {
                 <p>{message}</p>
                 {note && <small><em>{note}</em></small>}
             </div>,
-            { position: toast.POSITION.TOP_RIGHT }
         );
+    };
+
+    const sendAndroidNotification = (title, message, note) => {
+        if (Notification.permission === 'granted') {
+            new Notification(title, {
+                body: message + (note ? `\n${note}` : ''),
+                icon: '/path/to/icon.png' // Optional: Add an icon path
+            });
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    new Notification(title, {
+                        body: message + (note ? `\n${note}` : ''),
+                        icon: '/path/to/icon.png' // Optional: Add an icon path
+                    });
+                }
+            });
+        }
     };
 
     useEffect(() => {
         fetchReminders();
-        const syncInterval = setInterval(fetchReminders, 600000); // Sync every 10 minutes
+        const syncInterval = setInterval(fetchReminders, 600000); 
         return () => clearInterval(syncInterval);
     }, []);
 
     useEffect(() => {
-        if (reminders.length > 0) {
+        const checkInterval = setInterval(() => {
+            fetchReminders();
             processReminders(); // Check reminders immediately after fetching
-        }
-        const checkInterval = setInterval(processReminders, 60000); // Check every minute
+        }, 60000); // Check every minute
         return () => clearInterval(checkInterval);
-    }, [reminders]); // Dependency on reminders array
+    }, []); // No dependency on reminders array
 
     return (
         <div>
