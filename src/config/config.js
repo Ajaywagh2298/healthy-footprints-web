@@ -1,3 +1,3 @@
-const BACKEND_HOST_URL = `https://8080-idx-healthy-footprints-servergit-1725914993667.cluster-bec2e4635ng44w7ed22sa22hes.cloudworkstations.dev`;
+const BACKEND_HOST_URL = `https://healthyme-kfbhz3zo8-ajaywagh2298s-projects.vercel.app`;
 
 export { BACKEND_HOST_URL };
