@@ -74,7 +74,14 @@ export default function DailyRecordScreen() {
         setLoading(true);
         try {
             // Make sure to include patientUid in the API request URL
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/dailyRecords/${patientUid}`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/dailyRecords/${patientUid}`,
+                {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                },
+                withCredentials: true, // This includes cookies in the request if your backend expects them
+              });
             response.data.sort((a, b) => new Date(b.recordDate) - new Date(a.recordDate));
             setDailyRecords(response.data);
         } catch (error) {

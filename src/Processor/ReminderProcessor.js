@@ -11,7 +11,14 @@ function ReminderProcessor() {
 
     const fetchReminders = async () => {
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/reminders/`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/reminders/`,
+                {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                },
+                withCredentials: true, // This includes cookies in the request if your backend expects them
+              });
             setReminders(response.data);
             console.log('Reminders fetched:', response.data); // Debugging log
         } catch (error) {

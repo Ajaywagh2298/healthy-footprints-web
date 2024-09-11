@@ -34,7 +34,7 @@ function App() {
           <Route path='/medicine' element={<MedicinePlanScreen />} />
           <Route path='/deit-plan' element={<DietPlanScreen />} />
           <Route path='/item' element={<ItemsScreen />} />
-          <Route path='/stock' element={<StockScreen/>} />
+          <Route path='/stock' element={<StockScreen />} />
         </Routes>
       </Router>
     </ThemeProvider>
@@ -45,15 +45,22 @@ function ProtectedRoute({ children }) {
   const navigate = useNavigate();
   let user = JSON.parse(localStorage.getItem('user'));
 
-  user  = user.user;
+  user = user.user;
   React.useEffect(() => {
     const checkAuth = async () => {
       if (user && user.token && user.uid) {
         try {
-          const response = await axios.get(`${BACKEND_HOST_URL}/api/auth/authUser/${user.uid}`);
+          const response = await axios.get(`${BACKEND_HOST_URL}/api/auth/authUser/${user.uid}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+              },
+              withCredentials: true, // This includes cookies in the request if your backend expects them
+            });
           if (!(response.data && response.data.token === user.token && response.data.logout == 1)) {
             navigate('/', { replace: true });
-          } 
+          }
         } catch (error) {
           navigate('/', { replace: true });
         }

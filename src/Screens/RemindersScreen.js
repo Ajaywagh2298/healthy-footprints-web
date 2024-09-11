@@ -64,7 +64,14 @@ export default function RemindersScreen() {
 
     async function fetchPatients() {
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/patients`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/patients`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             setPatients(response.data);
         } catch (error) {
             console.error('Failed to fetch patients:', error);
@@ -74,7 +81,14 @@ export default function RemindersScreen() {
     async function fetchReminders() {
         setLoading(true);
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/reminders/`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/reminders/`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             response.data.sort((a, b) => new Date(b.createDate) - new Date(a.createDate));
             setReminders(response.data);
         } catch (error) {
@@ -123,7 +137,14 @@ export default function RemindersScreen() {
             await axios.post(`${BACKEND_HOST_URL}/api/reminders/`, {
                 ...newReminder,
                 reminderTimeDate: selectedDates // Use the array of dates
-            });
+            },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             setNewReminder({
                 patientUid: '',
                 reminderType: '',
@@ -146,7 +167,14 @@ export default function RemindersScreen() {
 
     const handleDeleteReminder = async (id) => {
         try {
-            await axios.delete(`${BACKEND_HOST_URL}/api/reminders/${id}`);
+            await axios.delete(`${BACKEND_HOST_URL}/api/reminders/${id}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             fetchReminders(); // Refresh the reminders list after deletion
         } catch (error) {
             console.error('Failed to delete reminder:', error);
@@ -166,7 +194,7 @@ export default function RemindersScreen() {
 
     return (
         <>
-        <Navbar/>
+            <Navbar />
             <Container maxWidth="md">
                 <Box display="flex" flexDirection="column" alignItems="center" padding={2} mt={4}>
                     <Box display="flex" alignItems="center" mb={3} width="100%">
@@ -214,7 +242,7 @@ export default function RemindersScreen() {
                                             </TableCell>
                                             <TableCell>
                                                 <IconButton size="small" color="#d35400" onClick={() => handleDeleteReminder(reminder._id)}>
-                                                    <Delete SX={{ color: '#cb4335'}}/>
+                                                    <Delete SX={{ color: '#cb4335' }} />
                                                 </IconButton>
                                             </TableCell>
                                         </TableRow>

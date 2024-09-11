@@ -37,7 +37,13 @@ export default function Navbar() {
 
     if (user && user.user.uid) {
       try {
-        await axios.get(`${BACKEND_HOST_URL}/api/auth/logout/${user.user.uid}`);
+        await axios.get(`${BACKEND_HOST_URL}/api/auth/logout/${user.user.uid}`,{
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+          },
+          withCredentials: true, // This includes cookies in the request if your backend expects them
+        });
         localStorage.removeItem('user');
         navigate('/', { replace: true });
       } catch (error) {

@@ -57,7 +57,13 @@ export default function DashboardScreen() {
     // Function to fetch patients data
     const fetchPatients = () => {
         setLoading(true);
-        fetch(`${BACKEND_HOST_URL}/api/patients`)
+        fetch(`${BACKEND_HOST_URL}/api/patients`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+            },
+            credentials: 'include' // This includes cookies in the request if your backend expects them
+        })
             .then((res) => res.json())
             .then((data) => {
                 setPatients(data);
@@ -72,7 +78,14 @@ export default function DashboardScreen() {
     // Function to fetch metrics data
     const fetchMatrix = () => {
         setLoading(true);
-        fetch(`${BACKEND_HOST_URL}/api/auth/metrics`)
+        fetch(`${BACKEND_HOST_URL}/api/auth/metrics`,
+            {
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+            },
+            withCredentials: true, // This includes cookies in the request if your backend expects them
+          })
             .then((res) => res.json())
             .then((data) => {
                 setTotalMatrix(data);
@@ -112,7 +125,14 @@ export default function DashboardScreen() {
 
     const handleUpdate = async () => {
         try {
-            await axios.put(`${BACKEND_HOST_URL}/api/patients/${selectedPatient.uid}`, selectedPatient);
+            await axios.put(`${BACKEND_HOST_URL}/api/patients/${selectedPatient.uid}`, selectedPatient,
+                {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                },
+                withCredentials: true, // This includes cookies in the request if your backend expects them
+              });
             handleClose();
             fetchPatients();
             setSnackbarMessage('Patient updated successfully!');

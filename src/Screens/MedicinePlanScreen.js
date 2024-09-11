@@ -88,7 +88,14 @@ export default function MedicinePlanScreen() {
 
     async function fetchPatients() {
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/patients`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/patients`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             setPatients(response.data);
         } catch (error) {
             console.error('Failed to fetch patients:', error);
@@ -98,7 +105,14 @@ export default function MedicinePlanScreen() {
     async function fetchReminders() {
         setLoading(true);
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/medicinePlans/`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/medicinePlans/`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             response.data.sort((a, b) => new Date(b.createDate) - new Date(a.createDate));
             setReminders(response.data);
         } catch (error) {
@@ -195,7 +209,14 @@ export default function MedicinePlanScreen() {
             await axios.post(`${BACKEND_HOST_URL}/api/medicinePlans/`, {
                 ...newMedicine,
                 reminderTimeDate: selectedDates
-            });
+            },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
 
             if (newMedicine.setReminder) {
                 setNewReminder((prev) => ({
@@ -242,7 +263,14 @@ export default function MedicinePlanScreen() {
     const addReminder = async () => {
         await axios.post(`${BACKEND_HOST_URL}/api/reminders/`, {
             ...newReminder
-        });
+        },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                },
+                withCredentials: true, // This includes cookies in the request if your backend expects them
+            });
 
         setNewReminder({
             patientUid: '',
@@ -260,7 +288,14 @@ export default function MedicinePlanScreen() {
 
     const handleDeleteReminder = async (id) => {
         try {
-            await axios.delete(`${BACKEND_HOST_URL}/api/medicinePlans/${id}`);
+            await axios.delete(`${BACKEND_HOST_URL}/api/medicinePlans/${id}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             fetchReminders(); // Refresh the reminders after deletion
         } catch (error) {
             console.error('Failed to delete reminder:', error);

@@ -51,13 +51,14 @@ export default function StockScreen() {
     const staffUid = user ? user.user.uid : '';
 
     const [openStockForm, setOpenStockForm] = useState(false);
-    const [stockData, setStockData] = useState({ 
+    const [stockData, setStockData] = useState({
         itemUid: '',
         quantity: 0,
         costPerUnit: 0,
         totalCost: 0,
         type: '',
-        expiredDate: ''});
+        expiredDate: ''
+    });
 
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(0);
@@ -70,7 +71,14 @@ export default function StockScreen() {
 
     async function fetchItems() {
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/items`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/items`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             setItems(response.data);
         } catch (error) {
             console.error('Failed to fetch items:', error);
@@ -80,7 +88,14 @@ export default function StockScreen() {
     async function fetchStockPlans() {
         setLoading(true);
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/Stocks`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/Stocks`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             response.data.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
             setStockPlans(response.data);
         } catch (error) {
@@ -130,13 +145,14 @@ export default function StockScreen() {
     };
 
     const handleStockFormOpen = () => {
-        setStockData({ 
+        setStockData({
             itemUid: '',
             quantity: 0,
             costPerUnit: 0,
             totalCost: 0,
             type: '',
-            expiredDate: ''});
+            expiredDate: ''
+        });
         setOpenStockForm(true);
     };
 
@@ -181,10 +197,17 @@ export default function StockScreen() {
             await axios.post(`${BACKEND_HOST_URL}/api/stocks/`, {
                 ...newStockPlan,
                 stocks: stocksWithValidItemUid,
-                staffUid : staffUid,
+                staffUid: staffUid,
                 createdDate: new Date(),
                 updatedDate: new Date(),
-            });
+            },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
 
             setNewStockPlan({
                 uid: '',
@@ -217,7 +240,14 @@ export default function StockScreen() {
 
     const handleDeleteStockPlan = async (uid) => {
         try {
-            await axios.delete(`${BACKEND_HOST_URL}/api/stock/${uid}`);
+            await axios.delete(`${BACKEND_HOST_URL}/api/stock/${uid}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             fetchStockPlans(); // Refresh the stock plans after deletion
         } catch (error) {
             console.error('Failed to delete stock plan:', error);
@@ -326,7 +356,7 @@ export default function StockScreen() {
                                 step: 300,
                             }}
                         />
-                         <TextField
+                        <TextField
                             margin="normal"
                             label="Batch Date"
                             type="date"
@@ -375,19 +405,19 @@ export default function StockScreen() {
                         </Box>
                     </Box>
                     <TextField
-                            margin="normal"
-                            label="Stock End Date"
-                            type="date"
-                            fullWidth
-                            value={newStockPlan.stockEndDate}
-                            onChange={(e) => handleInputChange('stockEndDate', e.target.value)}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            inputProps={{
-                                step: 300,
-                            }}
-                        />
+                        margin="normal"
+                        label="Stock End Date"
+                        type="date"
+                        fullWidth
+                        value={newStockPlan.stockEndDate}
+                        onChange={(e) => handleInputChange('stockEndDate', e.target.value)}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        inputProps={{
+                            step: 300,
+                        }}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
@@ -402,19 +432,19 @@ export default function StockScreen() {
             <Dialog open={openStockForm} onClose={handleStockFormClose} fullWidth maxWidth="xs">
                 <DialogTitle>Add Stock Items </DialogTitle>
                 <DialogContent>
-                <FormControl fullWidth margin="normal">
-                    <InputLabel>Item Name</InputLabel>
-                    <Select
-                        value={stockData.itemUid || ''} // Ensure itemUid is not null
-                        onChange={(e) => handleStockDataChange('itemUid', e.target.value)}
-                    >
-                        {items.map((item) => (
-                            <MenuItem key={item.uid} value={item.uid}>
-                                {item.itemName}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel>Item Name</InputLabel>
+                        <Select
+                            value={stockData.itemUid || ''} // Ensure itemUid is not null
+                            onChange={(e) => handleStockDataChange('itemUid', e.target.value)}
+                        >
+                            {items.map((item) => (
+                                <MenuItem key={item.uid} value={item.uid}>
+                                    {item.itemName}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     <TextField
                         fullWidth
                         label="Quantity"

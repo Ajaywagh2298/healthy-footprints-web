@@ -65,7 +65,14 @@ export default function DietPlanScreen() {
 
     async function fetchPatients() {
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/patients`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/patients`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             setPatients(response.data);
         } catch (error) {
             console.error('Failed to fetch patients:', error);
@@ -75,7 +82,14 @@ export default function DietPlanScreen() {
     async function fetchDietPlans() {
         setLoading(true);
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/dietPlans/`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/dietPlans/`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             response.data.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
             setDietPlans(response.data);
         } catch (error) {
@@ -163,7 +177,14 @@ export default function DietPlanScreen() {
                 time: new Date(`1970-01-01T${newDietPlan.time}:00`), // Convert time to Date object
                 createdDate: new Date(),
                 updatedDate: new Date(),
-            });
+            },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
 
             setNewDietPlan({
                 _id: '', // Reset _id on submit
@@ -191,7 +212,14 @@ export default function DietPlanScreen() {
 
     const handleDeleteDietPlan = async (id) => {
         try {
-            await axios.delete(`${BACKEND_HOST_URL}/api/dietPlans/${id}`);
+            await axios.delete(`${BACKEND_HOST_URL}/api/dietPlans/${id}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             fetchDietPlans(); // Refresh the diet plans after deletion
         } catch (error) {
             console.error('Failed to delete diet plan:', error);

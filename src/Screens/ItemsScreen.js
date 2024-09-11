@@ -63,7 +63,14 @@ export default function ItemsScreen() {
     async function fetchItems() {
         setLoading(true);
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/items/`);
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/items/`,
+                {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                },
+                withCredentials: true, // This includes cookies in the request if your backend expects them
+              });
             setItems(response.data);
         } catch (error) {
             console.error('Failed to fetch items:', error);
@@ -111,7 +118,14 @@ export default function ItemsScreen() {
             await axios.post(`${BACKEND_HOST_URL}/api/items/`, {
                 ...newItem,
                 staffUid: staffUid
-            });
+            },
+            {
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+            },
+            withCredentials: true, // This includes cookies in the request if your backend expects them
+          });
             setNewItem({
                 _id: '', // Reset to a valid ObjectId format
                 itemName: '',
@@ -132,7 +146,14 @@ export default function ItemsScreen() {
 
     const handleDeleteItem = async (id) => {
         try {
-            await axios.delete(`${BACKEND_HOST_URL}/api/items/${id}`);
+            await axios.delete(`${BACKEND_HOST_URL}/api/items/${id}`,
+                {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                },
+                withCredentials: true, // This includes cookies in the request if your backend expects them
+              });
             fetchItems(); // Refresh the items list after deletion
         } catch (error) {
             console.error('Failed to delete item:', error);
