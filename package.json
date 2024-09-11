@@ -1,10 +1,10 @@
 {
   "name": "healthy-footprints-web",
   "version": "0.1.0",
-  "private": true,
   "allowedHosts": [
     "localhost"
   ],
+  "proxy" : "https://healthyme-hy8yid04a-ajaywagh2298s-projects.vercel.app",
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
