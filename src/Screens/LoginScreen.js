@@ -51,7 +51,8 @@ export default function LoginScreen() {
       const { data } = await axios.post(`${BACKEND_HOST_URL}/api/auth/login`, { username, password },
       {
         headers: {
-          'Content-Type': 'application/json',  // Ensure the request content type is JSON
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });
@@ -79,6 +80,7 @@ export default function LoginScreen() {
         headers: {
           'Content-Type': 'application/json',  // Ensure the request content type is JSON
           'Authorization': `Bearer`, // Add any custom headers you need (e.g., auth tokens)
+          'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });
