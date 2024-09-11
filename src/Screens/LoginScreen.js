@@ -52,7 +52,6 @@ export default function LoginScreen() {
       {
         headers: {
           'Content-Type': 'application/json',  // Ensure the request content type is JSON
-          'Authorization': `Bearer ${yourAuthToken}`, // Add any custom headers you need (e.g., auth tokens)
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });
@@ -79,7 +78,7 @@ export default function LoginScreen() {
       {
         headers: {
           'Content-Type': 'application/json',  // Ensure the request content type is JSON
-          'Authorization': `Bearer ${yourAuthToken}`, // Add any custom headers you need (e.g., auth tokens)
+          'Authorization': `Bearer`, // Add any custom headers you need (e.g., auth tokens)
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });
