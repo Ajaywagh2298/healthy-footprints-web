@@ -12,7 +12,8 @@ import {
   FormLabel,
   Card,
   CardContent,
-  Container,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import axios from 'axios';
 import { BACKEND_HOST_URL } from '../config/config';
@@ -26,9 +27,10 @@ export default function CreatePatientScreen({ user }) {
     weight: '',
     height: '',
     bloodGroup: '',
+    otherBloodGroup: '',
     address: '',
     healthStatus: '',
-    staffUid: user?.uid || '', // Use logged-in user's UID
+    staffUid: user?.uid || '',
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
@@ -53,11 +55,10 @@ export default function CreatePatientScreen({ user }) {
     if (!validate()) return;
 
     try {
-      await axios.post(`${BACKEND_HOST_URL}/api/patients`, form ,
-      {
+      await axios.post(`${BACKEND_HOST_URL}/api/patients`, form, {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+          'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app',
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });
@@ -67,6 +68,7 @@ export default function CreatePatientScreen({ user }) {
         weight: '',
         height: '',
         bloodGroup: '',
+        otherBloodGroup: '',
         address: '',
         healthStatus: '',
         staffUid: user?.uid || '',
@@ -79,7 +81,7 @@ export default function CreatePatientScreen({ user }) {
 
   return (
     <>
-    <Navbar />
+      <Navbar />
       <Card sx={{ m: 2, p: 2, boxShadow: 3 }}>
         <CardContent>
           <Typography variant="h4" component="h1" align="center" gutterBottom>
@@ -103,6 +105,7 @@ export default function CreatePatientScreen({ user }) {
                   fullWidth
                   label="Date of Birth"
                   variant="outlined"
+                  type="date"
                   value={form.dateOfBirth}
                   onChange={(e) => handleChange('dateOfBirth', e.target.value)}
                   error={Boolean(errors.dateOfBirth)}
@@ -135,15 +138,45 @@ export default function CreatePatientScreen({ user }) {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Blood Group"
-                  variant="outlined"
-                  value={form.bloodGroup}
-                  onChange={(e) => handleChange('bloodGroup', e.target.value)}
-                  error={Boolean(errors.bloodGroup)}
-                  helperText={errors.bloodGroup}
-                />
+                <FormControl fullWidth variant="outlined" error={Boolean(errors.bloodGroup)}>
+                  <FormLabel>Blood Group</FormLabel>
+                  <Select
+                    value={form.bloodGroup === 'Other' ? form.otherBloodGroup || 'Other' : form.bloodGroup}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === 'Other') {
+                        setForm({ ...form, bloodGroup: 'Other', otherBloodGroup: '' });
+                      } else {
+                        setForm({ ...form, bloodGroup: value, otherBloodGroup: '' });
+                      }
+                    }}
+                  >
+                    <MenuItem value="" disabled>
+                      Select Blood Group
+                    </MenuItem>
+                    <MenuItem value="A+">A+</MenuItem>
+                    <MenuItem value="A-">A-</MenuItem>
+                    <MenuItem value="B+">B+</MenuItem>
+                    <MenuItem value="B-">B-</MenuItem>
+                    <MenuItem value="AB+">AB+</MenuItem>
+                    <MenuItem value="AB-">AB-</MenuItem>
+                    <MenuItem value="O+">O+</MenuItem>
+                    <MenuItem value="O-">O-</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </Select>
+                  {form.bloodGroup === 'Other' && (
+                    <TextField
+                      fullWidth
+                      label="Specify Other Blood Group"
+                      variant="outlined"
+                      value={form.otherBloodGroup}
+                      onChange={(e) => handleChange('otherBloodGroup', e.target.value)}
+                      error={Boolean(errors.otherBloodGroup)}
+                      helperText={errors.bloodGroup}
+                      sx={{marginTop : 2}}
+                    />
+                  )}
+                </FormControl>
               </Grid>
               <Grid item xs={12}>
                 <TextField

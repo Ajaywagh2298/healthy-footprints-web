@@ -50,15 +50,18 @@ function ProtectedRoute({ children }) {
     const checkAuth = async () => {
       if (user && user.token && user.uid) {
         try {
-          const response = await axios.get(`${BACKEND_HOST_URL}/api/auth/authUser/${user.uid}`,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
-              },
-              withCredentials: true, // This includes cookies in the request if your backend expects them
-            });
-          if (!(response.data && response.data.token === user.token && response.data.logout == 1)) {
+          const response = await axios.get(`${BACKEND_HOST_URL}/api/auth/authUser/${user.uid}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+            },
+            withCredentials: true, // This includes cookies in the request if your backend expects them
+          });
+          
+          const dataArray = response.data;
+          const isValidUser = dataArray.some(obj => obj.token === user.token && obj.logout === 1);
+          
+          if (!isValidUser) {
             navigate('/', { replace: true });
           }
         } catch (error) {

@@ -273,7 +273,10 @@ export default function DashboardScreen() {
                         boxShadow: 1,
                     }}
                 >
-                    {loading ? <CircularProgress /> : filteredPatients.map(renderPatient)}
+                    {/* {loading ? <CircularProgress /> : filteredPatients.map(renderPatient)} */}
+                    <Typography variant="h6" sx={{ margin: 2 }}>
+                    No Patient Available
+                </Typography>
                 </Box>
 
                 {/* Patient Details Dialog */}
