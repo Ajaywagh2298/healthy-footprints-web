@@ -48,7 +48,14 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const { data } = await axios.post(`${BACKEND_HOST_URL}/api/auth/login`, { username, password });
+      const { data } = await axios.post(`${BACKEND_HOST_URL}/api/auth/login`, { username, password },
+      {
+        headers: {
+          'Content-Type': 'application/json',  // Ensure the request content type is JSON
+          'Authorization': `Bearer ${yourAuthToken}`, // Add any custom headers you need (e.g., auth tokens)
+        },
+        withCredentials: true, // This includes cookies in the request if your backend expects them
+      });
       localStorage.setItem('user', JSON.stringify(data));  // Store the user data
 
       setDialogTitle('Success');
@@ -68,7 +75,14 @@ export default function LoginScreen() {
 
   const handleRegister = async () => {
     try {
-      await axios.post(`${BACKEND_HOST_URL}/api/auth/register`, { username, name, password, dateOfBirth, type });
+      await axios.post(`${BACKEND_HOST_URL}/api/auth/register`, { username, name, password, dateOfBirth, type },
+      {
+        headers: {
+          'Content-Type': 'application/json',  // Ensure the request content type is JSON
+          'Authorization': `Bearer ${yourAuthToken}`, // Add any custom headers you need (e.g., auth tokens)
+        },
+        withCredentials: true, // This includes cookies in the request if your backend expects them
+      });
       setDialogTitle('Success');
       setDialogMessage('Registration Successful! Please log in.');
       setDialogOpen(true);
