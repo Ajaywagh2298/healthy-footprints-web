@@ -1,3 +1,3 @@
-const BACKEND_HOST_URL = `https://healthyme-kfbhz3zo8-ajaywagh2298s-projects.vercel.app`;
+const BACKEND_HOST_URL = `https://healthyme-cyan.vercel.app`;
 
 export { BACKEND_HOST_URL };
