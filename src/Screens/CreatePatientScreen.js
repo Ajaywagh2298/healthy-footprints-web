@@ -38,7 +38,8 @@ export default function CreatePatientScreen({ user }) {
   const handleChange = (name, value) => {
     setForm({ ...form, [name]: value });
   };
-
+  const user = JSON.parse(localStorage.getItem('user'));
+    const staffUid = user ? user.user.uid : '';
   const validate = () => {
     let tempErrors = {};
     tempErrors.name = form.name ? '' : 'This field is required.';
@@ -71,7 +72,7 @@ export default function CreatePatientScreen({ user }) {
         otherBloodGroup: '',
         address: '',
         healthStatus: '',
-        staffUid: user?.uid || '',
+        staffUid: staffUid,
       });
       navigate('/dashboard'); // Navigate back to the Dashboard screen
     } catch (error) {
