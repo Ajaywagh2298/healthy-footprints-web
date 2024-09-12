@@ -60,7 +60,7 @@ export default function CreatePatientScreen() {
       await axios.post(`${BACKEND_HOST_URL}/api/patients`, form, {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app',
+          // 'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app',
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });
