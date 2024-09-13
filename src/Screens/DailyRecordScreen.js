@@ -33,7 +33,7 @@ import AirIcon from '@mui/icons-material/Air';
 import MedicationIcon from '@mui/icons-material/Medication';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import GestureIcon from '@mui/icons-material/Gesture';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL ,FRONTEND_HOST_URL} from '../config/config';
 
 export default function DailyRecordScreen() {
     const navigate = useNavigate();
@@ -78,7 +78,7 @@ export default function DailyRecordScreen() {
                 {
                 headers: {
                   'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                  'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                 },
                 withCredentials: true, // This includes cookies in the request if your backend expects them
               });

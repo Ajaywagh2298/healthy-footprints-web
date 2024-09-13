@@ -30,7 +30,7 @@ import { Refresh, AddCircleOutline, CalendarToday, Visibility, Search, Edit as E
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL,FRONTEND_HOST_URL } from '../config/config';
 
 export default function DietPlanScreen() {
     const [dietPlans, setDietPlans] = useState([]);
@@ -69,7 +69,7 @@ export default function DietPlanScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -86,7 +86,7 @@ export default function DietPlanScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -216,7 +216,7 @@ export default function DietPlanScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });

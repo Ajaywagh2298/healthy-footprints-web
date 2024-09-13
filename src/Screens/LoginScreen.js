@@ -21,7 +21,7 @@ import {
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL, FRONTEND_HOST_URL } from '../config/config';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
@@ -52,7 +52,7 @@ export default function LoginScreen() {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+          'Access-Control-Allow-Origin': FRONTEND_HOST_URL
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });
@@ -80,7 +80,7 @@ export default function LoginScreen() {
         headers: {
           'Content-Type': 'application/json',  // Ensure the request content type is JSON
           'Authorization': `Bearer`, // Add any custom headers you need (e.g., auth tokens)
-          'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+          'Access-Control-Allow-Origin': FRONTEND_HOST_URL
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });

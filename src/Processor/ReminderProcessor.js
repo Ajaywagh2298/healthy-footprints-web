@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL , FRONTEND_HOST_URL} from '../config/config';
 
 function ReminderProcessor() {
     const [reminders, setReminders] = useState([]);
@@ -15,7 +15,7 @@ function ReminderProcessor() {
                 {
                 headers: {
                   'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                  'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                 },
                 withCredentials: true, // This includes cookies in the request if your backend expects them
               });

@@ -28,11 +28,23 @@ import {
     Alert
 } from '@mui/material';
 import { Refresh, AddCircleOutline, Visibility, Search, Delete } from '@mui/icons-material';
+import {
+      LabelImportant,
+    Code,
+    Description,
+    ShoppingCart,
+    Inventory,
+    MonetizationOn,
+    TrendingUp,
+    Straighten,
+    Layers,
+    FilterFrames,
+} from '@mui/icons-material';
 import WarningIcon from '@mui/icons-material/Warning';
 import EnergySavingsLeafIcon from '@mui/icons-material/EnergySavingsLeaf';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL, FRONTEND_HOST_URL } from '../config/config';
 
 export default function ItemsScreen() {
     const [items, setItems] = useState([]);
@@ -67,7 +79,7 @@ export default function ItemsScreen() {
                 {
                 headers: {
                   'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                  'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                 },
                 withCredentials: true, // This includes cookies in the request if your backend expects them
               });
@@ -122,7 +134,7 @@ export default function ItemsScreen() {
             {
             headers: {
               'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+              'Access-Control-Allow-Origin': FRONTEND_HOST_URL
             },
             withCredentials: true, // This includes cookies in the request if your backend expects them
           });
@@ -150,7 +162,7 @@ export default function ItemsScreen() {
                 {
                 headers: {
                   'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                  'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                 },
                 withCredentials: true, // This includes cookies in the request if your backend expects them
               });
@@ -334,28 +346,114 @@ export default function ItemsScreen() {
                 <DialogTitle>View Item Details</DialogTitle>
                 <DialogContent>
                     {selectedItem && (
-                        <Box>
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Item Name:</strong> {selectedItem.itemName}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Item Code:</strong> {selectedItem.itemCode}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Description:</strong> {selectedItem.descript}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Use Quantity:</strong> {selectedItem.quantity}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Total Quantity :</strong> {selectedItem.totalQuantity}</Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2"><strong>Total Cost :</strong> {selectedItem.totalCost}</Typography>
-                                </Grid>
-                            </Grid>
-                        </Box>
+                       <Box sx={{ padding: 2, backgroundColor: '#f5f5f5', borderRadius: 2 }}>
+                       <Grid container spacing={3}>
+           
+                           {/* Item Name */}
+                           <Grid item xs={6}>
+                               <Box display="flex" alignItems="center">
+                                   <LabelImportant sx={{ color: '#1976d2', mr: 1 }} />
+                                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                       Item Name:
+                                   </Typography>
+                               </Box>
+                               <Typography variant="body2" sx={{ ml: 4 }}>
+                                   {selectedItem.itemName}
+                               </Typography>
+                           </Grid>
+           
+                           {/* Item Code */}
+                           <Grid item xs={6}>
+                               <Box display="flex" alignItems="center">
+                                   <Code sx={{ color: '#1976d2', mr: 1 }} />
+                                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                       Item Code:
+                                   </Typography>
+                               </Box>
+                               <Typography variant="body2" sx={{ ml: 4 }}>
+                                   {selectedItem.itemCode}
+                               </Typography>
+                           </Grid>
+           
+                           <Grid item xs={12}>
+                               <Divider sx={{ my: 2 }} />
+                           </Grid>
+           
+                           {/* Description */}
+                           <Grid item xs={12}>
+                               <Box display="flex" alignItems="center">
+                                   <Description sx={{ color: '#1976d2', mr: 1 }} />
+                                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                       Description:
+                                   </Typography>
+                               </Box>
+                               <Typography variant="body2" sx={{ ml: 4 }}>
+                                   {selectedItem.descript}
+                               </Typography>
+                           </Grid>
+           
+                           {/* Use Quantity */}
+                           <Grid item xs={6}>
+                               <Box display="flex" alignItems="center">
+                                   <ShoppingCart sx={{ color: '#1976d2', mr: 1 }} />
+                                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                       available Quantity:
+                                   </Typography>
+                               </Box>
+                               <Typography variant="body2" sx={{ ml: 4 }}>
+                                   {selectedItem.totalQuantity - selectedItem.quantity}
+                               </Typography>
+                           </Grid>
+           
+                           {/* Total Quantity */}
+                           <Grid item xs={6}>
+                               <Box display="flex" alignItems="center">
+                                   <Inventory sx={{ color: '#1976d2', mr: 1 }} />
+                                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                       Total Quantity:
+                                   </Typography>
+                               </Box>
+                               <Typography variant="body2" sx={{ ml: 4 }}>
+                                   {selectedItem.totalQuantity}
+                               </Typography>
+                           </Grid>
+           
+                           <Grid item xs={12}>
+                               <Divider sx={{ my: 2 }} />
+                           </Grid>
+           
+                           {/* Stock Limit */}
+                           <Grid item xs={6}>
+                               <Box display="flex" alignItems="center">
+                                   <TrendingUp sx={{ color: '#1976d2', mr: 1 }} />
+                                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                       Stock Limit:
+                                   </Typography>
+                               </Box>
+                               <Typography variant="body2" sx={{ ml: 4 }}>
+                                   {selectedItem.stockLimit}
+                               </Typography>
+                           </Grid>
+           
+                           <Grid item xs={12}>
+                               <Divider sx={{ my: 2 }} />
+                           </Grid>
+           
+                           {/* Total Cost */}
+                           <Grid item xs={12}>
+                               <Box display="flex" alignItems="center">
+                                   <MonetizationOn sx={{ color: '#1976d2', mr: 1 }} />
+                                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                       Total Cost:
+                                   </Typography>
+                               </Box>
+                               <Typography variant="body2" sx={{ ml: 4 }}>
+                                   RS. {selectedItem.totalCost.toFixed(2)}
+                               </Typography>
+                           </Grid>
+           
+                       </Grid>
+                   </Box>
                     )}
                 </DialogContent>
                 <DialogActions>

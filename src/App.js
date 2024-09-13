@@ -7,12 +7,13 @@ import CreatePatientScreen from './Screens/CreatePatientScreen';
 import DailyRecordScreen from './Screens/DailyRecordScreen';
 import RemindersScreen from './Screens/RemindersScreen';
 import StockScreen from './Screens/StockScreen';
-import { BACKEND_HOST_URL } from './config/config';
+import { BACKEND_HOST_URL ,FRONTEND_HOST_URL} from './config/config';
 import axios from 'axios';
 import './App.css';
 import MedicinePlanScreen from './Screens/MedicinePlanScreen';
 import DietPlanScreen from './Screens/DietPlanScreen';
 import ItemsScreen from './Screens/ItemsScreen';
+import InventoryScreen from './Screens/InventoryScreen';
 import ReminderProcessor from './Processor/ReminderProcessor';
 const theme = createTheme({
   palette: {
@@ -35,6 +36,7 @@ function App() {
           <Route path='/deit-plan' element={<DietPlanScreen />} />
           <Route path='/item' element={<ItemsScreen />} />
           <Route path='/stock' element={<StockScreen />} />
+          <Route path='/inventory' element={ <InventoryScreen/>} />
         </Routes>
       </Router>
     </ThemeProvider>
@@ -53,7 +55,7 @@ function ProtectedRoute({ children }) {
           const response = await axios.get(`${BACKEND_HOST_URL}/api/auth/authUser/${user.uid}`, {
             headers: {
               'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+              'Access-Control-Allow-Origin': FRONTEND_HOST_URL
             },
             withCredentials: true, // This includes cookies in the request if your backend expects them
           });

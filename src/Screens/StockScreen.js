@@ -24,13 +24,14 @@ import {
     TablePagination,
     Select,
     MenuItem,
-    InputLabel,
+    InputLabel
 } from '@mui/material';
 import { Refresh, AddCircleOutline, CalendarToday, Visibility, Search, Edit as EditIcon } from '@mui/icons-material';
+import { Inventory, MonetizationOn, DateRange } from '@mui/icons-material';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL, FRONTEND_HOST_URL } from '../config/config';
 
 export default function StockScreen() {
     const [stockPlans, setStockPlans] = useState([]);
@@ -75,7 +76,7 @@ export default function StockScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -92,7 +93,7 @@ export default function StockScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -161,7 +162,23 @@ export default function StockScreen() {
     };
 
     const handleStockDataChange = (field, value) => {
-        setStockData((prev) => ({ ...prev, [field]: value }));
+        setStockData((prev) => {
+            let updatedData = { ...prev, [field]: value };
+    
+            if (field === 'quantity' || field === 'costPerUnit') {
+                const quantity = parseFloat(updatedData.quantity) || 0;
+                const costPerUnit = parseFloat(updatedData.costPerUnit) || 0;
+                updatedData.totalCost = (quantity * costPerUnit).toFixed(2);
+            }
+    
+            if (field === 'quantity' || field === 'totalCost') {
+                const quantity = parseFloat(updatedData.quantity) || 0;
+                const totalCost = parseFloat(updatedData.totalCost) || 0;
+                updatedData.costPerUnit = quantity !== 0 ? (totalCost / quantity).toFixed(2) : 0;
+            }
+    
+            return updatedData;
+        });
     };
 
     const handleStockSave = () => {
@@ -204,7 +221,7 @@ export default function StockScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -244,7 +261,7 @@ export default function StockScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -254,6 +271,7 @@ export default function StockScreen() {
         }
     };
 
+    
     return (
         <>
             <Navbar />
@@ -284,7 +302,7 @@ export default function StockScreen() {
                                     <TableRow>
                                         <TableCell>Index</TableCell>
                                         <TableCell>Batch Name</TableCell>
-                                        <TableCell>Items Date</TableCell>
+                                        <TableCell>Items Name</TableCell>
                                         <TableCell>Date</TableCell>
                                         <TableCell>Actions</TableCell>
                                     </TableRow>
@@ -405,18 +423,12 @@ export default function StockScreen() {
                         </Box>
                     </Box>
                     <TextField
-                        margin="normal"
-                        label="Stock End Date"
-                        type="date"
                         fullWidth
+                        type='date'
+                        label="Stock End Date"
                         value={newStockPlan.stockEndDate}
                         onChange={(e) => handleInputChange('stockEndDate', e.target.value)}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        inputProps={{
-                            step: 300,
-                        }}
+                        margin="dense"
                     />
                 </DialogContent>
                 <DialogActions>
@@ -490,25 +502,63 @@ export default function StockScreen() {
                 <DialogTitle sx={{ backgroundColor: '#1976d2', color: '#fff', textAlign: 'center' }}>View Stock Plan Details</DialogTitle>
                 <DialogContent sx={{ padding: 3 }}>
                     {selectedStockPlan && (
-                        <Box>
-                            <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                            </Box>
-                            <Divider sx={{ my: 2 }} />
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}><strong>Batch Date:</strong> {new Date(selectedStockPlan.batchDate).toLocaleString()}</Typography>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Typography variant="h6" sx={{ color: '#1976d2' }}>Quantity: <span style={{ fontWeight: 'normal' }}>{selectedStockPlan.quantity}</span></Typography>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Typography variant="h6" sx={{ color: '#1976d2' }}>Total Cost: <span style={{ fontWeight: 'normal' }}>RS. {selectedStockPlan.totalCost.toFixed(2)}</span></Typography>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Typography variant="h6" sx={{ color: '#1976d2' }}>Expired Date: <span style={{ fontWeight: 'normal' }}>{new Date(selectedStockPlan.expiredDate).toLocaleString()}</span></Typography>
-                                </Grid>
-                            </Grid>
-                        </Box>
+                         <Box sx={{ padding: 2 }}>
+                         <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                             <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+                                 Stock Plan Details
+                             </Typography>
+                             <IconButton color="primary">
+                                 <Inventory fontSize="large" />
+                             </IconButton>
+                         </Box>
+                         <Divider sx={{ my: 2 }} />
+                         <Grid container spacing={2}>
+                             <Grid item xs={6}>
+                                 <Box display="flex" alignItems="center">
+                                     <CalendarToday sx={{ color: '#1976d2', mr: 1 }} />
+                                     <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                         Batch Date:
+                                     </Typography>
+                                 </Box>
+                                 <Typography variant="body2">
+                                     {new Date(selectedStockPlan.batchDate).toLocaleString()}
+                                 </Typography>
+                             </Grid>
+                             <Grid item xs={6}>
+                                 <Box display="flex" alignItems="center">
+                                     <DateRange sx={{ color: '#1976d2', mr: 1 }} />
+                                     <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                         Expired Date:
+                                     </Typography>
+                                 </Box>
+                                 <Typography variant="body2">
+                                     {new Date(selectedStockPlan.expiredDate).toLocaleDateString()}
+                                 </Typography>
+                             </Grid>
+                             <Grid item xs={12}>
+                                 <Box display="flex" alignItems="center">
+                                     <Inventory sx={{ color: '#1976d2', mr: 1 }} />
+                                     <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+                                         Quantity:
+                                     </Typography>
+                                 </Box>
+                                 <Typography variant="body1" sx={{ ml: 3 }}>
+                                     {selectedStockPlan.quantity}
+                                 </Typography>
+                             </Grid>
+                             <Grid item xs={12}>
+                                 <Box display="flex" alignItems="center">
+                                     <MonetizationOn sx={{ color: '#1976d2', mr: 1 }} />
+                                     <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+                                         Total Cost:
+                                     </Typography>
+                                 </Box>
+                                 <Typography variant="body1" sx={{ ml: 3 }}>
+                                     RS. {selectedStockPlan.totalCost.toFixed(2)}
+                                 </Typography>
+                             </Grid>
+                         </Grid>
+                     </Box>
                     )}
                 </DialogContent>
                 <DialogActions sx={{ justifyContent: 'center', padding: 2 }}>

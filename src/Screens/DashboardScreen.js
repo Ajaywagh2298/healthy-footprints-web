@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { Search, Refresh, AccountCircle, AddCircleOutline, ShowChart } from '@mui/icons-material';
 import Navbar from '../components/Navbar';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL, FRONTEND_HOST_URL } from '../config/config';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import axios from 'axios';
@@ -60,7 +60,7 @@ export default function DashboardScreen() {
         fetch(`${BACKEND_HOST_URL}/api/patients`, {
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                'Access-Control-Allow-Origin': FRONTEND_HOST_URL
             },
             credentials: 'include' // This includes cookies in the request if your backend expects them
         })
@@ -80,12 +80,12 @@ export default function DashboardScreen() {
         setLoading(true);
         fetch(`${BACKEND_HOST_URL}/api/auth/metrics`,
             {
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
-            },
-            withCredentials: true, // This includes cookies in the request if your backend expects them
-          })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': FRONTEND_HOST_URL
+                },
+                withCredentials: true, // This includes cookies in the request if your backend expects them
+            })
             .then((res) => res.json())
             .then((data) => {
                 setTotalMatrix(data);
@@ -127,12 +127,12 @@ export default function DashboardScreen() {
         try {
             await axios.put(`${BACKEND_HOST_URL}/api/patients/${selectedPatient.uid}`, selectedPatient,
                 {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
-                },
-                withCredentials: true, // This includes cookies in the request if your backend expects them
-              });
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
+                    },
+                    withCredentials: true, // This includes cookies in the request if your backend expects them
+                });
             handleClose();
             fetchPatients();
             setSnackbarMessage('Patient updated successfully!');
@@ -273,10 +273,11 @@ export default function DashboardScreen() {
                         boxShadow: 1,
                     }}
                 >
-                    {/* {loading ? <CircularProgress /> : filteredPatients.map(renderPatient)} */}
-                    <Typography variant="h6" sx={{ margin: 2 }}>
-                    No Patient Available
-                </Typography>
+                    {filteredPatients.length > 0 ? filteredPatients.map(renderPatient) : (
+                        <Typography variant="h6" sx={{ margin: 2 }}>
+                            No Patient Available
+                        </Typography>
+                    )}
                 </Box>
 
                 {/* Patient Details Dialog */}

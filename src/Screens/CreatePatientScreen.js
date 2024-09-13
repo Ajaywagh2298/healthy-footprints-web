@@ -16,7 +16,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import axios from 'axios';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL , FRONTEND_HOST_URL} from '../config/config';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
@@ -58,7 +58,7 @@ export default function CreatePatientScreen({ user }) {
       await axios.post(`${BACKEND_HOST_URL}/api/patients`, form, {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app',
+          'Access-Control-Allow-Origin': FRONTEND_HOST_URL,
         },
         withCredentials: true, // This includes cookies in the request if your backend expects them
       });

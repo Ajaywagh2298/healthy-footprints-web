@@ -36,7 +36,7 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 import Navbar from '../components/Navbar';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL,FRONTEND_HOST_URL } from '../config/config';
 
 export default function MedicinePlanScreen() {
     const [reminders, setReminders] = useState([]);
@@ -92,7 +92,7 @@ export default function MedicinePlanScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -109,7 +109,7 @@ export default function MedicinePlanScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -213,7 +213,7 @@ export default function MedicinePlanScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
@@ -267,7 +267,7 @@ export default function MedicinePlanScreen() {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                    'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                 },
                 withCredentials: true, // This includes cookies in the request if your backend expects them
             });
@@ -292,7 +292,7 @@ export default function MedicinePlanScreen() {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });

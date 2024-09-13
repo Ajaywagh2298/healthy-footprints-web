@@ -6,10 +6,11 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import VaccinesIcon from '@mui/icons-material/Vaccines';
 import SoupKitchenIcon from '@mui/icons-material/SoupKitchen';
 import PlaylistAddCheckCircleIcon from '@mui/icons-material/PlaylistAddCheckCircle';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { BACKEND_HOST_URL } from '../config/config';
+import { BACKEND_HOST_URL, FRONTEND_HOST_URL } from '../config/config';
 import { motion } from 'framer-motion';
 
 export default function Navbar() {
@@ -40,7 +41,7 @@ export default function Navbar() {
         await axios.get(`${BACKEND_HOST_URL}/api/auth/logout/${user.user.uid}`,{
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': 'https://healthy-footprints-web.vercel.app'
+            'Access-Control-Allow-Origin': FRONTEND_HOST_URL
           },
           withCredentials: true, // This includes cookies in the request if your backend expects them
         });
@@ -60,7 +61,8 @@ export default function Navbar() {
     { text: 'Medicine Plan', icon: <VaccinesIcon />, path: '/medicine' },
     { text: 'Diet Plan', icon: <SoupKitchenIcon />, path: '/deit-plan' }, 
     { text: 'Items', icon : <PlaylistAddCheckCircleIcon />, path: '/item' },
-    { text: 'Stock List', icon : <InventoryIcon />, path: '/stock' }
+    { text: 'Stock List', icon : <InventoryIcon />, path: '/stock' },
+    { text: 'Daily Inventory', icon : <AddShoppingCartIcon />, path: '/inventory' }
   ];
 
   return (
