@@ -20,7 +20,9 @@ import { BACKEND_HOST_URL , FRONTEND_HOST_URL} from '../config/config';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
-export default function CreatePatientScreen({ user }) {
+export default function CreatePatientScreen() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  const staffUid = user ? user.user.uid : '';
   const [form, setForm] = useState({
     name: '',
     dateOfBirth: '',
@@ -30,7 +32,7 @@ export default function CreatePatientScreen({ user }) {
     otherBloodGroup: '',
     address: '',
     healthStatus: '',
-    staffUid: user?.uid || '',
+    staffUid: staffUid,
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
@@ -71,7 +73,7 @@ export default function CreatePatientScreen({ user }) {
         otherBloodGroup: '',
         address: '',
         healthStatus: '',
-        staffUid: user?.uid || '',
+        staffUid: staffUid,
       });
       navigate('/dashboard'); // Navigate back to the Dashboard screen
     } catch (error) {
