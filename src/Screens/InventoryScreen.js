@@ -24,13 +24,14 @@ import {
     TablePagination,
     Select,
     MenuItem,
-    InputLabel
+    InputLabel,
 } from '@mui/material';
 import { Refresh, AddCircleOutline, CalendarToday, Visibility, Search, Edit as EditIcon } from '@mui/icons-material';
 import { Inventory, MonetizationOn, DateRange } from '@mui/icons-material';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { BACKEND_HOST_URL, FRONTEND_HOST_URL } from '../config/config';
 
 export default function InventoryScreen() {
@@ -46,11 +47,11 @@ export default function InventoryScreen() {
     const [newStockPlan, setNewStockPlan] = useState({
         useDate: '',
         useTime: '',
-        inventories : [],
+        inventories: [],
         staffUid: staffUid,
     });
 
-    
+
 
     const [openStockForm, setOpenStockForm] = useState(false);
     const [stockData, setStockData] = useState({
@@ -63,9 +64,16 @@ export default function InventoryScreen() {
 
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(0);
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
+    const [itemUid, setItemUid] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     useEffect(() => {
+        const currentDate = new Date();
+        const priorDate = new Date().setDate(currentDate.getDate() - 7);
+        setFromDate(new Date(priorDate).toISOString().split('T')[0]);
+        setToDate(currentDate.toISOString().split('T')[0]);
         fetchItems();
         fetchStockPlans();
     }, []);
@@ -85,19 +93,26 @@ export default function InventoryScreen() {
             console.error('Failed to fetch items:', error);
         }
     }
-
+    const handleFilter = () => {
+        fetchStockPlans();
+    };
     async function fetchStockPlans() {
         setLoading(true);
         try {
-            const response = await axios.get(`${BACKEND_HOST_URL}/api/Stocks`,
+            const response = await axios.get(`${BACKEND_HOST_URL}/api/inventory`,
                 {
+                    params: {
+                        fromDate,
+                        toDate,
+                        itemUid
+                    },
                     headers: {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': FRONTEND_HOST_URL
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
-            response.data.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+            response.data.sort((a, b) => new Date(b.date) - new Date(a.date));
             setStockPlans(response.data);
         } catch (error) {
             console.error('Failed to fetch stock plans:', error);
@@ -119,7 +134,7 @@ export default function InventoryScreen() {
         setNewStockPlan({
             useDate: '',
             useTime: '',
-            inventories : [],
+            inventories: [],
             staffUid: staffUid,
         });
         setOpen(false);
@@ -137,7 +152,7 @@ export default function InventoryScreen() {
     };
 
     const handleRemoveStock = (index) => {
-        const updatedStocks = newStockPlan.stocks.filter((_, i) => i !== index);
+        const updatedStocks = newStockPlan.inventories.filter((_, i) => i !== index);
         setNewStockPlan((prev) => ({
             ...prev,
             inventories: updatedStocks,
@@ -162,12 +177,14 @@ export default function InventoryScreen() {
     const handleStockDataChange = (field, value) => {
         setStockData((prev) => {
             let updatedData = { ...prev, [field]: value };
-    
+
             if (field === 'quantity') {
                 const quantity = parseInt(updatedData.quantity) || 0;
-                const oldStock = parseInt(updatedData.availableQuantity) || 0;
-                const totalQuantity = parseInt(updatedData.availableQuantity) || 0;
-                updatedData.availableQuantity = (totalQuantity - ( oldStock + quantity));
+                const tempItem = items.find((data) => data.uid === updatedData.itemUid);
+                const oldStock = parseInt(tempItem.quantity) || 0;
+                const totalQuantity = parseInt(tempItem.totalQuantity) || 0;
+                updatedData.availableQuantity = (totalQuantity - (oldStock + quantity));
+                updatedData.totalQuantity = tempItem.totalQuantity;
             }
             return updatedData;
         });
@@ -203,7 +220,7 @@ export default function InventoryScreen() {
                 // itemUid: stock.itemUid && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(stock.itemUid) ? stock.itemUid : null // Validate UUID format
             }));
 
-            await axios.post(`${BACKEND_HOST_URL}/api/stocks/`, {
+            await axios.post(`${BACKEND_HOST_URL}/api/inventory/`, {
                 ...newStockPlan,
                 stocks: stocksWithValidItemUid,
                 staffUid: staffUid,
@@ -221,7 +238,7 @@ export default function InventoryScreen() {
             setNewStockPlan({
                 useDate: '',
                 useTime: '',
-                inventories : [],
+                inventories: [],
                 staffUid: "",
                 staffUid: staffUid,
             });
@@ -246,30 +263,13 @@ export default function InventoryScreen() {
         setPage(0);
     };
 
-    const handleDeleteStockPlan = async (uid) => {
-        try {
-            await axios.delete(`${BACKEND_HOST_URL}/api/stock/${uid}`,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': FRONTEND_HOST_URL
-                    },
-                    withCredentials: true, // This includes cookies in the request if your backend expects them
-                });
-            fetchStockPlans(); // Refresh the stock plans after deletion
-        } catch (error) {
-            console.error('Failed to delete stock plan:', error);
-        }
-    };
-
-    
     return (
         <>
             <Navbar />
             <Container maxWidth="md">
-                <Box display="flex" flexDirection="column" alignItems="center" padding={2} mt={4}>
+                <Box display="flex" flexDirection="column" alignItems="center" padding={2} mt={4} mb={2}>
                     <Box display="flex" alignItems="center" mb={3} width="100%">
-                        <TextField
+                        {/* <TextField
                             variant="outlined"
                             placeholder="Search Stock Plan"
                             value={search}
@@ -278,12 +278,57 @@ export default function InventoryScreen() {
                                 startAdornment: <Search />,
                             }}
                             sx={{ flexGrow: 1, marginRight: 2 }}
-                        />
-                        <IconButton onClick={fetchStockPlans} color="primary">
+                        /> */}
+                        {/* <IconButton onClick={fetchStockPlans} color="primary">
                             <Refresh />
-                        </IconButton>
+                        </IconButton> */}
                     </Box>
-
+                    <Grid container spacing={2} alignItems="center" justifyContent="flex-start">
+                        <Grid item>
+                            <TextField
+                                label="From Date"
+                                type="date"
+                                value={fromDate}
+                                onChange={(e) => setFromDate(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <TextField
+                                label="To Date"
+                                type="date"
+                                value={toDate}
+                                onChange={(e) => setToDate(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <Select
+                                label="Product Name"
+                                value={itemUid}
+                                onChange={(e) => setItemUid(e.target.value)}
+                                displayEmpty
+                            >
+                                <MenuItem value="">
+                                    <em>All Items</em>
+                                </MenuItem>
+                                {items.map((item) => (
+                                    <MenuItem key={item.uid} value={item.uid}>
+                                        {item.itemName}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </Grid>
+                        <Grid item>
+                            <Button variant="contained" color="success" onClick={handleFilter}>
+                            <FilterAltIcon /> Filter
+                            </Button>
+                            {/* <FilterAltIcon onClick={handleFilter} variant="contained" color="primary"/>
+                            <IconButton onClick={fetchStockPlans} color="primary">
+                            <Refresh />
+                        </IconButton> */}
+                        </Grid>
+                    </Grid>
                     {loading ? (
                         <CircularProgress />
                     ) : (
@@ -292,8 +337,6 @@ export default function InventoryScreen() {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Index</TableCell>
-                                        <TableCell>Batch Name</TableCell>
-                                        <TableCell>Items Name</TableCell>
                                         <TableCell>Date</TableCell>
                                         <TableCell>Actions</TableCell>
                                     </TableRow>
@@ -302,15 +345,10 @@ export default function InventoryScreen() {
                                     {stockPlans.length > 0 ? stockPlans.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((stockPlan, index) => (
                                         <TableRow key={stockPlan.uid || index}> {/* Changed uid to _id */}
                                             <TableCell>{index + 1}</TableCell>
-                                            <TableCell>{stockPlan.batchName}</TableCell>
-                                            <TableCell>{items.find((d) => d.uid === stockPlan.itemUid)?.itemName || 'Unknown'}</TableCell>
-                                            <TableCell>{new Date(stockPlan.batchDate).toLocaleString()}</TableCell>
+                                            <TableCell>{new Date(stockPlan.date).toLocaleDateString()}</TableCell>
                                             <TableCell>
                                                 <IconButton size="small" color="primary" onClick={() => handleStockPlanClick(stockPlan)}>
                                                     <Visibility />
-                                                </IconButton>
-                                                <IconButton size="small" color="error" onClick={() => handleDeleteStockPlan(stockPlan.uid)} disabled>
-                                                    <DeleteIcon />
                                                 </IconButton>
                                             </TableCell>
                                         </TableRow>
@@ -347,31 +385,25 @@ export default function InventoryScreen() {
                 </IconButton>
             </Box>
 
-            <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+            <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm" mb={4}>
                 <DialogTitle>Create Stock Plan</DialogTitle>
                 <DialogContent>
                     <Box component="form" noValidate autoComplete="off" sx={{ mt: 1 }}>
                         <TextField
                             margin="normal"
-                            label="Batch Name"
-                            type="text"
+                            label="Use Date"
+                            type="date"
                             fullWidth
-                            value={newStockPlan.batchName}
-                            onChange={(e) => handleInputChange('batchName', e.target.value)}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            inputProps={{
-                                step: 300,
-                            }}
+                            value={newStockPlan.useDate}
+                            onChange={(e) => handleInputChange('useDate', e.target.value)}
                         />
                         <TextField
                             margin="normal"
-                            label="Batch Date"
-                            type="date"
+                            label="Use Time"
+                            type="time"
                             fullWidth
-                            value={newStockPlan.batchDate}
-                            onChange={(e) => handleInputChange('batchDate', e.target.value)}
+                            value={newStockPlan.useTime}
+                            onChange={(e) => handleInputChange('useTime', e.target.value)}
                         />
                         <Box mt={3}>
                             <Typography variant="h6">Stocks</Typography>
@@ -382,16 +414,14 @@ export default function InventoryScreen() {
                                             <TableRow>
                                                 <TableCell>Items Name</TableCell>
                                                 <TableCell>Quantity</TableCell>
-                                                <TableCell>Total Cost</TableCell>
                                                 <TableCell>Actions</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody sx={{ fontSize: 14 }}>
-                                            {newStockPlan.stocks.map((stock, index) => (
+                                            {newStockPlan.inventories.map((stock, index) => (
                                                 <TableRow key={index}>
                                                     <TableCell>{items.find(d => d.uid == stock.itemUid)?.itemName || 'Unknown'}</TableCell>
                                                     <TableCell>{stock.quantity}</TableCell>
-                                                    <TableCell>{stock.totalCost}</TableCell>
                                                     <TableCell>
                                                         <IconButton onClick={() => handleEditStock(index)} color="primary">
                                                             <EditIcon />
@@ -406,21 +436,13 @@ export default function InventoryScreen() {
                                     </Table>
                                 </TableContainer>
                             ) : (
-                                <Typography variant="body2">No Stocks Added</Typography>
+                                <Typography variant="body2">No Inventory Added</Typography>
                             )}
                             <Button onClick={handleStockFormOpen} variant="outlined" sx={{ mt: 2 }}>
                                 Add Use Inventory
                             </Button>
                         </Box>
                     </Box>
-                    <TextField
-                        fullWidth
-                        type='date'
-                        label="Stock End Date"
-                        value={newStockPlan.stockEndDate}
-                        onChange={(e) => handleInputChange('stockEndDate', e.target.value)}
-                        margin="dense"
-                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
@@ -450,32 +472,9 @@ export default function InventoryScreen() {
                     </FormControl>
                     <TextField
                         fullWidth
-                        label="Quantity"
-                        type="number"
+                        label="Use Quantity"
                         value={stockData.quantity}
                         onChange={(e) => handleStockDataChange('quantity', e.target.value)}
-                        margin="dense"
-                    />
-                    <TextField
-                        fullWidth
-                        label="Cost Per Unit"
-                        value={stockData.costPerUnit}
-                        onChange={(e) => handleStockDataChange('costPerUnit', e.target.value)}
-                        margin="dense"
-                    />
-                    <TextField
-                        fullWidth
-                        label="Total Cost"
-                        value={stockData.totalCost}
-                        onChange={(e) => handleStockDataChange('totalCost', e.target.value)}
-                        margin="dense"
-                    />
-                    <TextField
-                        fullWidth
-                        type='date'
-                        label="Expired Date"
-                        value={stockData.expiredDate}
-                        onChange={(e) => handleStockDataChange('expiredDate', e.target.value)}
                         margin="dense"
                     />
                 </DialogContent>
@@ -493,63 +492,66 @@ export default function InventoryScreen() {
                 <DialogTitle sx={{ backgroundColor: '#1976d2', color: '#fff', textAlign: 'center' }}>View Stock Plan Details</DialogTitle>
                 <DialogContent sx={{ padding: 3 }}>
                     {selectedStockPlan && (
-                         <Box sx={{ padding: 2 }}>
-                         <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                             <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
-                                 Stock Plan Details
-                             </Typography>
-                             <IconButton color="primary">
-                                 <Inventory fontSize="large" />
-                             </IconButton>
-                         </Box>
-                         <Divider sx={{ my: 2 }} />
-                         <Grid container spacing={2}>
-                             <Grid item xs={6}>
-                                 <Box display="flex" alignItems="center">
-                                     <CalendarToday sx={{ color: '#1976d2', mr: 1 }} />
-                                     <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                         Batch Date:
-                                     </Typography>
-                                 </Box>
-                                 <Typography variant="body2">
-                                     {new Date(selectedStockPlan.batchDate).toLocaleString()}
-                                 </Typography>
-                             </Grid>
-                             <Grid item xs={6}>
-                                 <Box display="flex" alignItems="center">
-                                     <DateRange sx={{ color: '#1976d2', mr: 1 }} />
-                                     <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                         Expired Date:
-                                     </Typography>
-                                 </Box>
-                                 <Typography variant="body2">
-                                     {new Date(selectedStockPlan.expiredDate).toLocaleDateString()}
-                                 </Typography>
-                             </Grid>
-                             <Grid item xs={12}>
-                                 <Box display="flex" alignItems="center">
-                                     <Inventory sx={{ color: '#1976d2', mr: 1 }} />
-                                     <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
-                                         Quantity:
-                                     </Typography>
-                                 </Box>
-                                 <Typography variant="body1" sx={{ ml: 3 }}>
-                                     {selectedStockPlan.quantity}
-                                 </Typography>
-                             </Grid>
-                             <Grid item xs={12}>
-                                 <Box display="flex" alignItems="center">
-                                     <MonetizationOn sx={{ color: '#1976d2', mr: 1 }} />
-                                     <Typography variant="h6" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
-                                         Total Cost:
-                                     </Typography>
-                                 </Box>
-                                 <Typography variant="body1" sx={{ ml: 3 }}>
-                                     RS. {selectedStockPlan.totalCost.toFixed(2)}
-                                 </Typography>
-                             </Grid>
-                         </Grid>
-                     </Box>
+                        <Box sx={{ padding: 2 }}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                                <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 'bold' }}>
+                                    Daily Inventory Details
+                                </Typography>
+                                <IconButton color="primary">
+                                    <Inventory fontSize="large" />
+                                </IconButton>
+                            </Box>
+                            <Divider sx={{ my: 2 }} />
+                            <Grid container spacing={2}>
+                                <Grid item xs={6}>
+                                    <Box display="flex" alignItems="center">
+                                        <CalendarToday sx={{ color: '#1976d2', mr: 1 }} />
+                                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                            Inventory Date:
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body2">
+                                        {selectedStockPlan.date}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    {selectedStockPlan.useItems && selectedStockPlan.useItems.length > 0 ? (
+                                        <TableContainer component={Paper}>
+                                            <Table>
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>Index</TableCell>
+                                                        <TableCell>Item</TableCell>
+                                                        <TableCell>Quantity</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {selectedStockPlan.useItems.map((item, index) => (
+                                                        <TableRow key={index}>
+                                                            <TableCell>
+                                                                <Typography variant="body2">{index + 1}</Typography>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Box display="flex" alignItems="center">
+                                                                    <Typography variant="body2">{items.find((data) => data.uid === item.itemUid).itemName}</Typography> {/* Assuming you have itemName */}
+                                                                </Box>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Typography variant="body2">{item.quantity}</Typography>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                    ) : (
+                                        <Typography variant="body2" color="textSecondary">
+                                            No items available.
+                                        </Typography>
+                                    )}
+                                </Grid>
+                            </Grid>
+                        </Box>
                     )}
                 </DialogContent>
                 <DialogActions sx={{ justifyContent: 'center', padding: 2 }}>

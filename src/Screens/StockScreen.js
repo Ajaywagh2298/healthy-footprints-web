@@ -97,7 +97,7 @@ export default function StockScreen() {
                     },
                     withCredentials: true, // This includes cookies in the request if your backend expects them
                 });
-            response.data.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+            response.data.sort((a, b) => new Date(b.batchDate) - new Date(a.batchDate));
             setStockPlans(response.data);
         } catch (error) {
             console.error('Failed to fetch stock plans:', error);

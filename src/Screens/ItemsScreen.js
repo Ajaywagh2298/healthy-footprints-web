@@ -65,7 +65,7 @@ export default function ItemsScreen() {
         category: '' // Added category field
     });
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -243,7 +243,7 @@ export default function ItemsScreen() {
                                                     size="small" 
                                                     color="#d35400" 
                                                     onClick={() => handleDeleteItem(item._id)} 
-                                                    disabled={item.quantity > 0 && item.totalQuantity > 0}
+                                                    disabled={(item.quantity > 0 && item.totalQuantity > 0) || item.totalQuantity > 0}
                                                 >
                                                     <Delete />
                                                 </IconButton>
@@ -259,7 +259,7 @@ export default function ItemsScreen() {
                                 </TableBody>
                             </Table>
                             <TablePagination
-                                rowsPerPageOptions={[10, 15, 25]}
+                                rowsPerPageOptions={[5, 10, 25]}
                                 component="div"
                                 count={items.length}
                                 rowsPerPage={rowsPerPage}
