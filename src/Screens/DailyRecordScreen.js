@@ -202,8 +202,10 @@ export default function DailyRecordScreen() {
                                     <TableRow key={record._id || index}>
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell>{record.recordDate ? new Date(record.recordDate).toLocaleDateString() : 'N/A'}</TableCell>
-                                        <TableCell>{record.recordDate ? new Date(record.recordDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A'}</TableCell>
-                                        <TableCell>
+                                          <TableCell>
+                                              {record.recordDate ? new Date(record.recordDate).toISOString().substr(11, 5) : 'N/A'}
+                                          </TableCell>                                                           
+                                         <TableCell>
                                             <Button size="small" color="primary" onClick={() => handleRecordClick(record)}>
                                                 <VisibilityIcon />
                                             </Button>
@@ -346,7 +348,7 @@ export default function DailyRecordScreen() {
                                     <CalendarToday sx={{fontSize : 20}}/> <Typography>{selectedRecord.recordDate ? new Date(selectedRecord.recordDate).toLocaleDateString() : 'N/A'}</Typography>
                                 </Typography>
                                 <Typography variant="body2" color="textSecondary" sx={{ flexDirection : 'row', alignItems : 'center', textAlign : 'center', marginRight : 4}}>
-                                    <AccessTime sx={{fontSize : 20}}/> <Typography>{selectedRecord.recordDate ? new Date(selectedRecord.recordDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A'}</Typography>
+                                    <AccessTime sx={{fontSize : 20}}/> <Typography>{selectedRecord.recordDate ? new Date(selectedRecord.recordDate).toISOString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A'}</Typography>
                                 </Typography>
                             </Box>
                             <Divider sx={{ my: 2 }} />
